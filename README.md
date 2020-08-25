@@ -50,12 +50,9 @@ to disable that (by editing `/boot/cmdline.txt`) before this will work.
 Instead of using a specifiy TTY device node, you should use
 `/dev/serial0`, which is a symlink to the proper device.
 
-Alternatively, you can use the second UART, but you'll need to load an
-overlay to assign it to GPIO pins.  See [UART
-configuration](https://www.raspberrypi.org/documentation/configuration/uart.md)
-and the [UART-related
-overlays](https://www.raspberrypi.org/documentation/configuration/uart.md)
-for more information.
+Alternatively, you can use the second UART, but you'll need to load an overlay
+to assign it to GPIO pins.  See [UART configuration][rpi-uart-config] and the
+[UART-related overlays][rpi-overlays] for more information.
 
 [crates-shield]: https://img.shields.io/crates/v/sen0177.svg
 [crates-url]: https://crates.io/crates/sen0177
@@ -65,3 +62,6 @@ for more information.
 [license-url]: https://github.com/kelnos/sen0177/blob/master/LICENSE
 [build-shield]: https://img.shields.io/github/workflow/status/kelnos/sen0177-rs/CI
 [build-url]: https://github.com/kelnos/sen0177-rs/actions
+
+[rpi-uart-config]: https://www.raspberrypi.org/documentation/configuration/uart.md
+[rpi-overlays]: https://github.com/raspberrypi/firmware/blob/master/boot/overlays/README
