@@ -44,8 +44,8 @@
 //! ```
 //! 
 //! Note that the serial device occasionally returns bad data.  If you
-//! recieve `Sen0177::InvalidData` or `Sen0177::ChecksumMismatch` from the
-//! `read()` call, a second try will usually succeed.
+//! receive [`Sen0177Error::InvalidData`] or [`Sen0177Error::ChecksumMismatch`]
+//! from the [`Sen0177::read`] call, a second try will usually succeed.
 //! 
 //! ## Gotchas
 //! 
