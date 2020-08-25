@@ -1,0 +1,16 @@
+[package]
+name = "sen0177"
+description = "Read air quality data from the SEN0177 sensor"
+version = "0.1.0"
+authors = ["Brian J. Tarricone <brian@tarricone.org>"]
+homepage = "https://github.com/kelnos/sen0177-rs"
+repository = "https://github.com/kelnos/sen0177-rs"
+license = "Apache-2.0"
+readme = "README.md"
+categories = [ "embedded", "hardware-support" ]
+keywords = [ "air-quality", "sensor", "sen0177" ]
+edition = "2018"
+
+[dependencies]
+serial = "0.4"
+serial-core = "0.4"
