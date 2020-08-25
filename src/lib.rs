@@ -32,15 +32,15 @@
 //! 
 //! ## Usage
 //! 
-//! ```rust
+//! ```rust,no_run
 //! use sen0177::{Reading, Sen0177};
 //! 
 //! const SERIAL_PORT: &str = "/dev/ttyS0";
 //! 
-//! let sensor = Sen0177::open(SERIAL_PORT).expect("Failed to open device");
+//! let mut sensor = Sen0177::open(SERIAL_PORT).expect("Failed to open device");
 //! let reading = sensor.read().expect("Failed to read sensor data");
 //! println!("PM1: {}µg/m³, PM2.5: {}µg/m³, PM10: {}µg/m³",
-//!          reading.pm1(), reading.pm2_5(), reading.pm10);
+//!          reading.pm1(), reading.pm2_5(), reading.pm10());
 //! ```
 //! 
 //! Note that the serial device occasionally returns bad data.  If you
