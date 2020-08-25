@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-//! `sen0177` is a Rust library/create that reads air quality data from the
+//! `sen0177` is a Rust library/crate that reads air quality data from the
 //! SEN0177 air quality sensor.
 //! 
 //! ## Prerequisites
