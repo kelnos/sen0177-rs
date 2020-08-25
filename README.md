@@ -20,7 +20,7 @@ Include the following in your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-sen0177 = "0.1"
+sen0177 = "<see tags for latest version>"
 ```
 
 ## Usage
