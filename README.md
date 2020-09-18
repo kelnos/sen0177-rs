@@ -59,7 +59,7 @@ to assign it to GPIO pins.  See [UART configuration][rpi-uart-config] and the
 [docs-shield]: https://docs.rs/sen0177/badge.svg
 [docs-url]: https://docs.rs/sen0177
 [license-shield]: https://img.shields.io/crates/l/sen0177.svg
-[license-url]: https://github.com/kelnos/sen0177/blob/master/LICENSE
+[license-url]: https://github.com/kelnos/sen0177-rs/blob/master/LICENSE
 [build-shield]: https://img.shields.io/github/workflow/status/kelnos/sen0177-rs/CI
 [build-url]: https://github.com/kelnos/sen0177-rs/actions
 
