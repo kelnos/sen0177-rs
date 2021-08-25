@@ -26,11 +26,14 @@ jobs:
       matrix:
         rust:
           - stable
-          - 1.40.0
+          - 1.46.0
         target:
           - arm-unknown-linux-gnueabihf
           - armv7-unknown-linux-gnueabihf
           - x86_64-unknown-linux-gnu
+        feature_flags:
+          - ''
+          - '--no-default-features'
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -42,4 +45,4 @@ jobs:
         with:
           use-cross: true
           command: test
-          args: --release --target=${{ matrix.target }}
+          args: --release --target=${{ matrix.target }} ${{ matrix.feature_flags }}
