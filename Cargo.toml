@@ -1,16 +1,25 @@
 [package]
 name = "sen0177"
 description = "Read air quality data from the SEN0177 sensor"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Brian J. Tarricone <brian@tarricone.org>"]
 homepage = "https://github.com/kelnos/sen0177-rs"
 repository = "https://github.com/kelnos/sen0177-rs"
 license = "Apache-2.0"
 readme = "README.md"
-categories = [ "embedded", "hardware-support" ]
-keywords = [ "air-quality", "sensor", "sen0177" ]
+categories = [ "embedded", "hardware-support", "no-std" ]
+keywords = [ "air-quality", "embedded-hal", "sensor", "sen0177" ]
 edition = "2018"
 
+[features]
+default = [ "std" ]
+# Provides impl for std types like std::error::Error
+std = []
+
 [dependencies]
+embedded-hal = "0.2"
+nb = "1"
+
+[dev-dependencies]
+linux-embedded-hal = "0.3"
 serial = "0.4"
-serial-core = "0.4"

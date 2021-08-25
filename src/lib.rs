@@ -17,35 +17,66 @@
 //! 
 //! ## Prerequisites
 //! 
-//! * You've connected the sensor to a UART on a Linux-based device, and
-//!   that UART is enabled and available from the kernel as a TTY device
-//!   node.
+//! * You've connected the sensor to a UART on your device, and your device
+//!   has a crate implementing the [`embedded_hal::serial::Read`] trait.
+//! * You've configured the UART for 9600 baud, 8 data bits, no parity, 1
+//!   stop bit, and no flow control.
 //! 
-//! ## Installation
+//! ## Setup
 //! 
 //! Include the following in your `Cargo.toml` file:
 //! 
 //! ```toml
 //! [dependencies]
-//! sen0177 = "0.1"
+//! sen0177 = "0.2"
+//! ```
+//!
+//! If you are in a `no_std` environment, you may depend on this crate like so:
+//!
+//! ```toml
+//! [dependencies]
+//! sen0177 = { version = "0.2", default-features = false }
 //! ```
 //! 
 //! ## Usage
+//!
+//! This example shows how to use the sensor when connected to a Linux-
+//! based serial device.
 //! 
 //! ```rust,no_run
-//! use sen0177::{Reading, Sen0177};
-//! 
+//! use linux_embedded_hal::Serial;
+//! use sen0177::Reading;
+//! use serial::{core::prelude::*, BaudRate, CharSize, FlowControl, Parity, StopBits};
+//! use std::{io, path::Path, time::Duration};
+//!
 //! const SERIAL_PORT: &str = "/dev/ttyS0";
-//! 
-//! let mut sensor = Sen0177::open(SERIAL_PORT).expect("Failed to open device");
-//! let reading = sensor.read().expect("Failed to read sensor data");
-//! println!("PM1: {}µg/m³, PM2.5: {}µg/m³, PM10: {}µg/m³",
-//!          reading.pm1(), reading.pm2_5(), reading.pm10());
+//! const BAUD_RATE: BaudRate = BaudRate::Baud9600;
+//! const CHAR_SIZE: CharSize = CharSize::Bits8;
+//! const PARITY: Parity = Parity::ParityNone;
+//! const STOP_BITS: StopBits = StopBits::Stop1;
+//! const FLOW_CONTROL: FlowControl = FlowControl::FlowNone;
+//!
+//! pub fn main() -> std::io::Result<()> {
+//!     let mut serial = Serial::open(&Path::new(SERIAL_PORT))?;
+//!     serial.0.set_timeout(Duration::from_millis(1500))?;
+//!     serial.0.reconfigure(&|settings| {
+//!         settings.set_char_size(CHAR_SIZE);
+//!         settings.set_parity(PARITY);
+//!         settings.set_stop_bits(STOP_BITS);
+//!         settings.set_flow_control(FLOW_CONTROL);
+//!         settings.set_baud_rate(BAUD_RATE)
+//!     })?;
+//!
+//!     let reading = sen0177::read(&mut serial).expect("Failed to read sensor data");
+//!     println!("PM1: {}µg/m³, PM2.5: {}µg/m³, PM10: {}µg/m³",
+//!              reading.pm1(), reading.pm2_5(), reading.pm10());
+//!     Ok(())
+//! }
 //! ```
 //! 
 //! Note that the serial device occasionally returns bad data.  If you
 //! receive [`Sen0177Error::InvalidData`] or [`Sen0177Error::ChecksumMismatch`]
-//! from the [`Sen0177::read`] call, a second try will usually succeed.
+//! from the [`read`] call, a second try will usually succeed.
 //! 
 //! ## Gotchas
 //! 
@@ -64,20 +95,16 @@
 //! overlays](https://www.raspberrypi.org/documentation/configuration/uart.md)
 //! for more information.
 
-use serial::{SystemPort, open as serial_open};
-use serial_core::{BaudRate, CharSize, Error as SerialError, ErrorKind as SerialErrorKind, FlowControl, Parity, Result as SerialResult, SerialPort, StopBits};
-use std::error::Error;
-use std::fmt;
-use std::io;
-use std::io::Read;
-use std::path::Path;
-use std::time::Duration;
+#![no_std]
 
-const BAUD_RATE: BaudRate = BaudRate::Baud9600;
-const CHAR_SIZE: CharSize = CharSize::Bits8;
-const PARITY: Parity = Parity::ParityNone;
-const STOP_BITS: StopBits = StopBits::Stop1;
-const FLOW_CONTROL: FlowControl = FlowControl::FlowNone;
+#[cfg(feature = "std")]
+extern crate std;
+
+#[macro_use(block)]
+extern crate nb;
+
+use core::fmt;
+use embedded_hal::serial::Read;
 
 const MAGIC_BYTE_0: u8 = 0x42;
 const MAGIC_BYTE_1: u8 = 0x4d;
@@ -86,153 +113,118 @@ const PAYLOAD_LEN: usize = 30;  // 32 - magic bytes
 /// A single air quality sensor reading
 #[derive(Debug, Clone, Copy)]
 pub struct Reading {
-    pm1: f64,
-    pm2_5: f64,
-    pm10: f64,
+    pm1: f32,
+    pm2_5: f32,
+    pm10: f32,
 }
 
 impl Reading {
     /// Returns the PM1 concentration in µg/m³
-    pub fn pm1(&self) -> f64 {
+    pub fn pm1(&self) -> f32 {
         self.pm1
     }
 
     /// Returns the PM2.5 concentration in µg/m³
-    pub fn pm2_5(&self) -> f64 {
+    pub fn pm2_5(&self) -> f32 {
         self.pm2_5
     }
 
     /// Returns the PM10 concentration in µg/m³
-    pub fn pm10(&self) -> f64 {
+    pub fn pm10(&self) -> f32 {
         self.pm10
     }
 }
 
 /// Describes errors returned by the SEN0177 sensor
 #[derive(Debug)]
-pub enum Sen0177Error {
-    /// Device not found on the specified port
-    DeviceNotFound,
-    /// Device is in use or does not support required port configuration parameters
-    DeviceUnavailable,
+pub enum Sen0177Error<E> {
     /// Device returned invalid data
-    InvalidData(String),
+    InvalidData(&'static str),
     /// The checksum provided in the sensor data did not match the checksum of the data itself
     ///
     /// Retrying the read will usually clear up the problem.
     ChecksumMismatch,
-    /// An IO error occurred when communicating with the serial port
-    IoError(io::Error),
-
+    /// Read error from the serial device
+    ReadError(E),
 }
 
-impl fmt::Display for Sen0177Error {
+impl<E: fmt::Debug> fmt::Display for Sen0177Error<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         use Sen0177Error::*;
         match self {
-            DeviceNotFound => write!(f, "Device not found"),
-            DeviceUnavailable => write!(f, "Device unavailable or does not support required parameters"),
             InvalidData(reason) => write!(f, "Invalid data: {}", reason),
             ChecksumMismatch => write!(f, "Data read was corrupt"),
-            IoError(err) => write!(f, "IO error: {}", err),
+            ReadError(error) => write!(f, "Read error: {:?}", error),
         }
     }
 }
 
-impl Error for Sen0177Error {
-    fn source(&self) -> Option<&(dyn Error + 'static)> {
-        match self {
-            Sen0177Error::IoError(ioerr) => Some(ioerr),
-            _ => None,
-        }
+#[cfg(feature = "std")]
+impl<E: fmt::Debug + fmt::Display> std::error::Error for Sen0177Error<E> {}
+
+impl<E> From<E> for Sen0177Error<E> {
+    fn from(error: E) -> Self {
+        Sen0177Error::ReadError(error)
     }
 }
 
-impl From<SerialError> for Sen0177Error {
-    fn from(err: SerialError) -> Self {
-        use Sen0177Error::*;
-        match err.kind() {
-            SerialErrorKind::NoDevice => DeviceNotFound,
-            SerialErrorKind::InvalidInput => DeviceUnavailable,
-            SerialErrorKind::Io(kind) => IoError(io::Error::new(kind, format!("{:?}", kind))),
-        }
-    }
-}
+#[doc(hidden)]
+pub trait SerialReader<E>: Read<u8, Error = E> {}
 
-impl From<io::Error> for Sen0177Error {
-    fn from(err: io::Error) -> Self {
-        Sen0177Error::IoError(err)
-    }
-}
+impl<E, T> SerialReader<E> for T
+where
+    T: Read<u8, Error = E>
+{}
 
-/// An instance of the SEN0177 air quality sensor
-pub struct Sen0177 {
-    serial_port: SystemPort,
-}
-
-impl Sen0177 {
-    /// Opens the sensor on the specified port
-    ///
-    /// # Arguments
-    ///
-    /// * `serial_dev` - The serial device node the sensor is connected to
-    pub fn open<P: AsRef<Path>>(serial_dev: P) -> Result<Sen0177, Sen0177Error> {
-        let mut serial_port = serial_open(serial_dev.as_ref())?;
-        Sen0177::configure_serial_port(&mut serial_port)?;
-        Ok(Sen0177 {
-            serial_port,
-        })
-    }
-
-    /// Reads a single sensor measurement
-    ///
-    /// Note that this function will block until sufficient data is available.
-    pub fn read(&mut self) -> Result<Reading, Sen0177Error> {
-        let mut attempts_left = 10;
-        let mut buf: [u8; 1] = [0; 1];
-        while buf[0] != MAGIC_BYTE_1 && attempts_left > 0 && find_byte(&mut self.serial_port, MAGIC_BYTE_0, PAYLOAD_LEN as u32 * 4)? {
-            self.serial_port.read_exact(&mut buf)?;
-            attempts_left -= 1;
-        }
-
-        if buf[0] == MAGIC_BYTE_1 {
-            let mut buf: [u8; PAYLOAD_LEN] = [0; PAYLOAD_LEN];
-            self.serial_port.read_exact(&mut buf)?;
-            validate_checksum(&buf)?;
-
-            Ok(Reading {
-                pm1: (((buf[2] as u16) << 8) | (buf[3] as u16)) as f64,
-                pm2_5: (((buf[4] as u16) << 8) | (buf[5] as u16)) as f64,
-                pm10: (((buf[6] as u16) << 8) | (buf[7] as u16)) as f64,
-            })
-        } else {
-            Err(Sen0177Error::InvalidData(format!("Unable to find start magic 0x{:2x}{:2x}", MAGIC_BYTE_0, MAGIC_BYTE_1)))
-        }
-    }
-
-    fn configure_serial_port(serial_port: &mut SystemPort) -> SerialResult<()> {
-        serial_port.set_timeout(Duration::from_millis(1500))?;
-        serial_port.reconfigure(&|settings| {
-            settings.set_char_size(CHAR_SIZE);
-            settings.set_parity(PARITY);
-            settings.set_stop_bits(STOP_BITS);
-            settings.set_flow_control(FLOW_CONTROL);
-            settings.set_baud_rate(BAUD_RATE)
-        })
-    }
-}
-
-fn find_byte(serial_port: &mut SystemPort, byte: u8, attempts: u32) -> io::Result<bool> {
-    let mut attempts_left = attempts;
-    let mut buf: [u8; 1] = [0; 1];
-    while buf[0] != byte && attempts_left > 0 {
-        serial_port.read_exact(&mut buf)?;
+/// Reads a single sensor measurement
+///
+/// This function will block until sufficient data is available.
+///
+/// # Arguments
+///
+/// * `serial_port` - a struct implementing the [`embedded_hal::serial::Read<u8>`] trait
+pub fn read<E, R>(serial_port: &mut R) -> Result<Reading, Sen0177Error<E>>
+where
+    R: SerialReader<E>
+{
+    let mut attempts_left = 10;
+    let mut byte_read = 0u8;
+    while byte_read != MAGIC_BYTE_1 && attempts_left > 0 && find_byte(serial_port, MAGIC_BYTE_0, PAYLOAD_LEN as u32 * 4)? {
+        byte_read = block!(serial_port.read())?;
         attempts_left -= 1;
     }
-    Ok(buf[0] == byte)
+
+    if byte_read == MAGIC_BYTE_1 {
+        let mut buf: [u8; PAYLOAD_LEN] = [0; PAYLOAD_LEN];
+        for buf_slot in buf.iter_mut() {
+            *buf_slot = block!(serial_port.read())?;
+        }
+        validate_checksum(&buf)?;
+
+        Ok(Reading {
+            pm1: (((buf[2] as u16) << 8) | (buf[3] as u16)) as f32,
+            pm2_5: (((buf[4] as u16) << 8) | (buf[5] as u16)) as f32,
+            pm10: (((buf[6] as u16) << 8) | (buf[7] as u16)) as f32,
+        })
+    } else {
+        Err(Sen0177Error::InvalidData("Unable to find magic bytes at start of payload"))
+    }
 }
 
-fn validate_checksum(buf: &[u8; PAYLOAD_LEN]) -> Result<(), Sen0177Error> {
+fn find_byte<R, E>(serial_port: &mut R, byte: u8, attempts: u32) -> Result<bool, Sen0177Error<E>>
+where
+    R: SerialReader<E>
+{
+    let mut attempts_left = attempts;
+    let mut byte_read = 0u8;
+    while byte_read != byte && attempts_left > 0 {
+        byte_read = block!(serial_port.read())?;
+        attempts_left -= 1;
+    }
+    Ok(byte_read == byte)
+}
+
+fn validate_checksum<E>(buf: &[u8; PAYLOAD_LEN]) -> Result<(), Sen0177Error<E>> {
     let init: u16 = (MAGIC_BYTE_0 as u16) + (MAGIC_BYTE_1 as u16);
     let sum = buf[0..PAYLOAD_LEN-2].iter().fold(init, |accum, next| accum + *next as u16);
     let expected_sum: u16 = ((buf[PAYLOAD_LEN-2] as u16) << 8) | (buf[PAYLOAD_LEN-1] as u16);
