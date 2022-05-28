@@ -42,8 +42,12 @@
 //!
 //! This example shows how to use the sensor when connected to a Linux-
 //! based serial device.
+//!
+//! (Note that this example currently does not work becuase this crate is
+//! tracking the current embedded-hal 1.0.0 alpha, but linux-embedded-hal
+//! is a little behind at the time of writing.)
 //! 
-//! ```rust,no_run
+//! ```rust,no_run,ignore
 //! use linux_embedded_hal::Serial;
 //! use sen0177::Reading;
 //! use serial::{core::prelude::*, BaudRate, CharSize, FlowControl, Parity, StopBits};
@@ -100,11 +104,14 @@
 #[cfg(feature = "std")]
 extern crate std;
 
-#[macro_use(block)]
-extern crate nb;
-
 use core::fmt;
-use embedded_hal::serial::Read;
+use embedded_hal::{
+    nb::block,
+    serial::{
+        Error as SerialError,
+        nb::Read,
+    },
+};
 
 const MAGIC_BYTE_0: u8 = 0x42;
 const MAGIC_BYTE_1: u8 = 0x4d;
@@ -137,7 +144,7 @@ impl Reading {
 
 /// Describes errors returned by the SEN0177 sensor
 #[derive(Debug)]
-pub enum Sen0177Error<E> {
+pub enum Sen0177Error<E: SerialError> {
     /// Device returned invalid data
     InvalidData(&'static str),
     /// The checksum provided in the sensor data did not match the checksum of the data itself
@@ -148,7 +155,7 @@ pub enum Sen0177Error<E> {
     ReadError(E),
 }
 
-impl<E: fmt::Debug> fmt::Display for Sen0177Error<E> {
+impl<E: SerialError> fmt::Display for Sen0177Error<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         use Sen0177Error::*;
         match self {
@@ -160,21 +167,13 @@ impl<E: fmt::Debug> fmt::Display for Sen0177Error<E> {
 }
 
 #[cfg(feature = "std")]
-impl<E: fmt::Debug + fmt::Display> std::error::Error for Sen0177Error<E> {}
+impl<E: SerialError> std::error::Error for Sen0177Error<E> {}
 
-impl<E> From<E> for Sen0177Error<E> {
+impl<E: SerialError> From<E> for Sen0177Error<E> {
     fn from(error: E) -> Self {
         Sen0177Error::ReadError(error)
     }
 }
-
-#[doc(hidden)]
-pub trait SerialReader<E>: Read<u8, Error = E> {}
-
-impl<E, T> SerialReader<E> for T
-where
-    T: Read<u8, Error = E>
-{}
 
 /// Reads a single sensor measurement
 ///
@@ -183,9 +182,10 @@ where
 /// # Arguments
 ///
 /// * `serial_port` - a struct implementing the [`embedded_hal::serial::Read<u8>`] trait
-pub fn read<E, R>(serial_port: &mut R) -> Result<Reading, Sen0177Error<E>>
+pub fn read<R, E>(serial_port: &mut R) -> Result<Reading, Sen0177Error<E>>
 where
-    R: SerialReader<E>
+    R: Read<u8, Error = E>,
+    E: SerialError,
 {
     let mut attempts_left = 10;
     let mut byte_read = 0u8;
@@ -213,7 +213,8 @@ where
 
 fn find_byte<R, E>(serial_port: &mut R, byte: u8, attempts: u32) -> Result<bool, Sen0177Error<E>>
 where
-    R: SerialReader<E>
+    R: Read<u8, Error = E>,
+    E: SerialError,
 {
     let mut attempts_left = attempts;
     let mut byte_read = 0u8;
@@ -224,7 +225,7 @@ where
     Ok(byte_read == byte)
 }
 
-fn validate_checksum<E>(buf: &[u8; PAYLOAD_LEN]) -> Result<(), Sen0177Error<E>> {
+fn validate_checksum<E: SerialError>(buf: &[u8; PAYLOAD_LEN]) -> Result<(), Sen0177Error<E>> {
     let init: u16 = (MAGIC_BYTE_0 as u16) + (MAGIC_BYTE_1 as u16);
     let sum = buf[0..PAYLOAD_LEN-2].iter().fold(init, |accum, next| accum + *next as u16);
     let expected_sum: u16 = ((buf[PAYLOAD_LEN-2] as u16) << 8) | (buf[PAYLOAD_LEN-1] as u16);

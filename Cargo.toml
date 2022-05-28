@@ -17,8 +17,7 @@ default = [ "std" ]
 std = []
 
 [dependencies]
-embedded-hal = "0.2"
-nb = "1"
+embedded-hal = "=1.0.0-alpha.8"
 
 [dev-dependencies]
 linux-embedded-hal = "0.3"
