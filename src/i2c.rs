@@ -44,14 +44,11 @@ where
 {
     fn read(&mut self) -> Result<Reading, SensorError<E>> {
         let mut buf: [u8; PAYLOAD_LEN] = [0; PAYLOAD_LEN];
-        if let Err(err) = self.i2c_bus.read(self.address, &mut buf) {
-            Err(err.into())
+        self.i2c_bus.read(self.address, &mut buf)?;
+        if buf[0] != MAGIC_BYTE_0 || buf[1] != MAGIC_BYTE_1 {
+            Err(SensorError::BadMagic)
         } else {
-            if buf[0] != MAGIC_BYTE_0 || buf[1] != MAGIC_BYTE_1 {
-                Err(SensorError::BadMagic)
-            } else {
-                parse_data(&buf)
-            }
+            parse_data(&buf)
         }
     }
 }
