@@ -87,7 +87,7 @@
 //! ```
 //! 
 //! Note that the serial device occasionally returns bad data.  If you
-//! receive [`SensorError::InvalidData`] or [`SensorError::ChecksumMismatch`]
+//! receive [`SensorError::BadMagic`] or [`SensorError::ChecksumMismatch`]
 //! from the [`AirQualitySensor::read`] call, a second try will usually succeed.
 //! 
 //! ## Gotchas
@@ -219,8 +219,11 @@ impl Reading {
 /// Describes errors returned by the air quality sensor
 #[derive(Debug)]
 pub enum SensorError<E: fmt::Debug> {
-    /// Device returned invalid data
-    InvalidData(&'static str),
+    /// Couldn't find the "magic" bytes that indicate the start of a data frame
+    ///
+    /// This likely means that you've set an incorrect baud rate, or there is something
+    /// noisy about your connection to the device.
+    BadMagic,
     /// The checksum provided in the sensor data did not match the checksum of the data itself
     ///
     /// Retrying the read will usually clear up the problem.
@@ -233,7 +236,7 @@ impl<E: fmt::Debug> fmt::Display for SensorError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         use SensorError::*;
         match self {
-            InvalidData(reason) => write!(f, "Invalid data: {}", reason),
+            BadMagic => write!(f, "Unable to find magic bytes at start of payload"),
             ChecksumMismatch => write!(f, "Data read was corrupt"),
             ReadError(error) => write!(f, "Read error: {:?}", error),
         }

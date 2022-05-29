@@ -67,7 +67,7 @@ where
 
             parse_data(&buf)
         } else {
-            Err(SensorError::InvalidData("Unable to find magic bytes at start of payload"))
+            Err(SensorError::BadMagic)
         }
     }
 }

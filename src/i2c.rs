@@ -48,7 +48,7 @@ where
             Err(err.into())
         } else {
             if buf[0] != MAGIC_BYTE_0 || buf[1] != MAGIC_BYTE_1 {
-                Err(SensorError::InvalidData("Unable to find magic bytes at start of payload"))
+                Err(SensorError::BadMagic)
             } else {
                 parse_data(&buf)
             }
