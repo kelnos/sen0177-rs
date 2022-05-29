@@ -131,12 +131,12 @@ pub trait AirQualitySensor<E: fmt::Debug> {
 /// A single air quality sensor reading
 #[derive(Debug, Clone, Copy)]
 pub struct Reading {
-    pm1: f32,
-    pm2_5: f32,
-    pm10: f32,
-    env_pm1: f32,
-    env_pm2_5: f32,
-    env_pm10: f32,
+    pm1: u16,
+    pm2_5: u16,
+    pm10: u16,
+    env_pm1: u16,
+    env_pm2_5: u16,
+    env_pm10: u16,
     particles_0_3: u16, 
     particles_0_5: u16,      
     particles_1: u16,      
@@ -147,17 +147,17 @@ pub struct Reading {
 
 impl Reading {
     /// Returns the standard PM1 concentration in µg/m³
-    pub fn pm1(&self) -> f32 {
+    pub fn pm1(&self) -> u16 {
         self.pm1
     }
 
     /// Returns the standard PM2.5 concentration in µg/m³
-    pub fn pm2_5(&self) -> f32 {
+    pub fn pm2_5(&self) -> u16 {
         self.pm2_5
     }
 
     /// Returns the standard PM10 concentration in µg/m³
-    pub fn pm10(&self) -> f32 {
+    pub fn pm10(&self) -> u16 {
         self.pm10
     }
 
@@ -165,7 +165,7 @@ impl Reading {
     ///
     /// Note that some devices do not support this reading and will
     /// return garbage data for this value.
-    pub fn env_pm1(&self) -> f32 {
+    pub fn env_pm1(&self) -> u16 {
         self.env_pm1
     }
 
@@ -173,7 +173,7 @@ impl Reading {
     ///
     /// Note that some devices do not support this reading and will
     /// return garbage data for this value.
-    pub fn env_pm2_5(&self) -> f32 {
+    pub fn env_pm2_5(&self) -> u16 {
         self.env_pm2_5
     }
 
@@ -181,7 +181,7 @@ impl Reading {
     ///
     /// Note that some devices do not support this reading and will
     /// return garbage data for this value.
-    pub fn env_pm10(&self) -> f32 {
+    pub fn env_pm10(&self) -> u16 {
         self.env_pm10
     }
 
