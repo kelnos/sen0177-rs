@@ -1,6 +1,6 @@
 [package]
 name = "sen0177"
-description = "Read air quality data from the SEN0177 sensor"
+description = "Read air quality data from the SEN0177 and PMSA003I sensors"
 version = "0.3.0-alpha.1"
 authors = ["Brian J. Tarricone <brian@tarricone.org>"]
 homepage = "https://github.com/kelnos/sen0177-rs"
@@ -8,7 +8,7 @@ repository = "https://github.com/kelnos/sen0177-rs"
 license = "Apache-2.0"
 readme = "README.md"
 categories = [ "embedded", "hardware-support", "no-std" ]
-keywords = [ "air-quality", "embedded-hal", "sensor", "sen0177" ]
+keywords = [ "air-quality", "embedded-hal", "sensor", "sen0177", "pmsa003i" ]
 edition = "2018"
 
 [features]

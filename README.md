@@ -6,7 +6,7 @@
 [![Build Status][build-shield]][build-url]
 
 `sen0177` is a Rust library/crate that reads air quality data from the
-SEN0177 air quality sensor.
+SEN0177 and PMSA003I air quality sensors.
 
 [crates-shield]: https://img.shields.io/crates/v/sen0177.svg
 [crates-url]: https://crates.io/crates/sen0177
