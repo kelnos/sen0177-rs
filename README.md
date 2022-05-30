@@ -60,7 +60,7 @@ const PARITY: Parity = Parity::ParityNone;
 const STOP_BITS: StopBits = StopBits::Stop1;
 const FLOW_CONTROL: FlowControl = FlowControl::FlowNone;
 
-pub fn main() -> std::io::Result<()> {
+pub fn main() -> anyhow::Result<()> {
     let mut serial = Serial::open(&Path::new(SERIAL_PORT))?;
     serial.0.set_timeout(Duration::from_millis(1500))?;
     serial.0.reconfigure(&|settings| {
@@ -72,10 +72,15 @@ pub fn main() -> std::io::Result<()> {
     })?;
     let mut sensor = Sen0177::new(serial);
 
-    let reading = sensor.read().expect("Failed to read sensor data");
-    println!("PM1: {}µg/m³, PM2.5: {}µg/m³, PM10: {}µg/m³",
-             reading.pm1(), reading.pm2_5(), reading.pm10());
-    Ok(())
+    loop {
+        match sensor.read() {
+            Ok(reading) => {
+                println!("PM1: {}µg/m³, PM2.5: {}µg/m³, PM10: {}µg/m³",
+                         reading.pm1(), reading.pm2_5(), reading.pm10());
+            },
+            Err(err) => eprintln!("Error: {:?}", err),
+        }
+    }
 }
 ```
 
