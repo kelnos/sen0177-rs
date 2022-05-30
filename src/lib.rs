@@ -107,10 +107,7 @@
 //! overlays](https://www.raspberrypi.org/documentation/configuration/uart.md)
 //! for more information.
 
-#![no_std]
-
-#[cfg(feature = "std")]
-extern crate std;
+#![cfg_attr(not(feature = "std"), no_std)]
 
 /// Sensors connected to the I2C bus
 pub mod i2c;

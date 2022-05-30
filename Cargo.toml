@@ -12,7 +12,7 @@ keywords = [ "air-quality", "embedded-hal", "sensor", "sen0177", "pmsa003i" ]
 edition = "2018"
 
 [features]
-default = [ "std" ]
+default = []
 # Provides impl for std types like std::error::Error
 std = []
 
