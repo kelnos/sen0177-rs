@@ -1,13 +1,17 @@
-use core::fmt;
 use crate::{Reading, SensorError};
+use core::fmt;
 
 pub(crate) const MAGIC_BYTE_0: u8 = 0x42;
 pub(crate) const MAGIC_BYTE_1: u8 = 0x4d;
 pub(crate) const PAYLOAD_LEN: usize = 32;
 
-pub(crate) fn parse_data<E: fmt::Debug>(buf: &[u8; PAYLOAD_LEN]) -> Result<Reading, SensorError<E>> {
-    let sum = buf[0..PAYLOAD_LEN-2].iter().fold(0u16, |accum, next| accum + *next as u16);
-    let expected_sum: u16 = ((buf[PAYLOAD_LEN-2] as u16) << 8) | (buf[PAYLOAD_LEN-1] as u16);
+pub(crate) fn parse_data<E: fmt::Debug>(
+    buf: &[u8; PAYLOAD_LEN],
+) -> Result<Reading, SensorError<E>> {
+    let sum = buf[0..PAYLOAD_LEN - 2]
+        .iter()
+        .fold(0u16, |accum, next| accum + *next as u16);
+    let expected_sum: u16 = ((buf[PAYLOAD_LEN - 2] as u16) << 8) | (buf[PAYLOAD_LEN - 1] as u16);
     if expected_sum == sum {
         Ok(Reading {
             pm1: as_u16(buf[4], buf[5]),

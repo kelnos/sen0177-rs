@@ -1,11 +1,11 @@
 // Copyright 2020 Brian J. Tarricone <brian@tarricone.org>
-// 
+//
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
-// 
+//
 //     http://www.apache.org/licenses/LICENSE-2.0
-// 
+//
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,19 +14,19 @@
 
 //! `sen0177` is a Rust library/crate that reads air quality data from the
 //! SEN0177 air quality sensor.
-//! 
+//!
 //! ## Prerequisites
-//! 
+//!
 //! * You've connected the sensor to a UART or I2C bus on your device, and
 //!   your device has a crate implementing the applicable [`embedded_hal`]
 //!   traits.
 //! * For a UART-based sensor, you've configured the UART for 9600 baud, 8
 //!   data bits, no parity, 1 stop bit, and no flow control.
-//! 
+//!
 //! ## Setup
-//! 
+//!
 //! Include the following in your `Cargo.toml` file:
-//! 
+//!
 //! ```toml
 //! [dependencies]
 //! sen0177 = "0.4"
@@ -38,7 +38,7 @@
 //! [dependencies]
 //! sen0177 = { version = "0.4", default-features = false }
 //! ```
-//! 
+//!
 //! ## Usage
 //!
 //! This example shows how to use the sensor when connected to a Linux-
@@ -53,7 +53,7 @@
 //! [patch.crates-io]
 //! linux-embedded-hal = { git = "https://github.com/kelnos/linux-embedded-hal.git", branch = "embedded-hal-1.0.0-alpha.8" }
 //! ```
-//! 
+//!
 //! ```rust,no_run,ignore
 //! use linux_embedded_hal::Serial;
 //! use sen0177::{serial::Sen0177, Reading};
@@ -85,21 +85,21 @@
 //!     Ok(())
 //! }
 //! ```
-//! 
+//!
 //! Note that the serial device occasionally returns bad data.  If you
 //! receive [`SensorError::BadMagic`] or [`SensorError::ChecksumMismatch`]
 //! from the [`AirQualitySensor::read`] call, a second try will usually succeed.
-//! 
+//!
 //! ## Gotchas
-//! 
+//!
 //! ### Raspberry Pi
-//! 
+//!
 //! If you're using this with a Raspberry Pi, note that by default the
 //! primary UART is set up as a Linux serial console.  You will need
 //! to disable that (by editing `/boot/cmdline.txt`) before this will work.
 //! Instead of using a specifiy TTY device node, you should use
 //! `/dev/serial0`, which is a symlink to the proper device.
-//! 
+//!
 //! Alternatively, you can use the second UART, but you'll need to load an
 //! overlay to assign it to GPIO pins.  See [UART
 //! configuration](https://www.raspberrypi.org/documentation/configuration/uart.md)
@@ -134,12 +134,12 @@ pub struct Reading {
     env_pm1: u16,
     env_pm2_5: u16,
     env_pm10: u16,
-    particles_0_3: u16, 
-    particles_0_5: u16,      
-    particles_1: u16,      
-    particles_2_5: u16,      
-    particles_5: u16,      
-    particles_10: u16,     
+    particles_0_3: u16,
+    particles_0_5: u16,
+    particles_1: u16,
+    particles_2_5: u16,
+    particles_5: u16,
+    particles_10: u16,
 }
 
 impl Reading {

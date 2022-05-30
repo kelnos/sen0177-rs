@@ -1,14 +1,5 @@
-use embedded_hal::i2c::{
-    blocking::I2c,
-    AddressMode,
-    Error as I2cError
-};
-use crate::{
-    read::*,
-    AirQualitySensor,
-    Reading,
-    SensorError,
-};
+use crate::{read::*, AirQualitySensor, Reading, SensorError};
+use embedded_hal::i2c::{blocking::I2c, AddressMode, Error as I2cError};
 
 /// A SEN0177 device connected via I2C
 pub struct Sen0177<A, I2C, E>
@@ -29,10 +20,7 @@ where
 {
     /// Creates a new sensor instance connected to I2C bus `i2c_bus` at address `address`
     pub fn new(i2c_bus: I2C, address: A) -> Self {
-        Self {
-            i2c_bus,
-            address,
-        }
+        Self { i2c_bus, address }
     }
 }
 

@@ -1,15 +1,7 @@
+use crate::{read::*, AirQualitySensor, Reading, SensorError};
 use embedded_hal::{
     nb::block,
-    serial::{
-        Error as SerialError,
-        nb::Read,
-    },
-};
-use crate::{
-    read::*,
-    AirQualitySensor,
-    Reading,
-    SensorError,
+    serial::{nb::Read, Error as SerialError},
 };
 
 /// A SEN0177 device connected via serial UART
@@ -28,9 +20,7 @@ where
 {
     /// Creates a new sensor instance connected to UART `serial_port`
     pub fn new(serial_port: R) -> Self {
-        Self {
-            serial_port,
-        }
+        Self { serial_port }
     }
 
     fn find_byte(&mut self, byte: u8, attempts: u32) -> Result<bool, SensorError<E>> {
@@ -52,7 +42,10 @@ where
     fn read(&mut self) -> Result<Reading, SensorError<E>> {
         let mut attempts_left = 10;
         let mut byte_read = 0u8;
-        while byte_read != MAGIC_BYTE_1 && attempts_left > 0 && self.find_byte(MAGIC_BYTE_0, PAYLOAD_LEN as u32 * 4)? {
+        while byte_read != MAGIC_BYTE_1
+            && attempts_left > 0
+            && self.find_byte(MAGIC_BYTE_0, PAYLOAD_LEN as u32 * 4)?
+        {
             byte_read = block!(self.serial_port.read())?;
             attempts_left -= 1;
         }
