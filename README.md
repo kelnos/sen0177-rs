@@ -105,6 +105,6 @@ for more information.
 [docs-shield]: https://docs.rs/sen0177/badge.svg
 [docs-url]: https://docs.rs/sen0177
 [license-shield]: https://img.shields.io/crates/l/sen0177.svg
-[license-url]: https://github.com/kelnos/sen0177-rs/blob/master/LICENSE
+[license-url]: https://github.com/kelnos/sen0177-rs/blob/maim/LICENSE
 [build-shield]: https://img.shields.io/github/workflow/status/kelnos/sen0177-rs/CI
 [build-url]: https://github.com/kelnos/sen0177-rs/actions
