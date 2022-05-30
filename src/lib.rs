@@ -233,8 +233,8 @@ impl<E: fmt::Debug> fmt::Display for SensorError<E> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         use SensorError::*;
         match self {
-            BadMagic => write!(f, "Unable to find magic bytes at start of payload"),
-            ChecksumMismatch => write!(f, "Data read was corrupt"),
+            BadMagic => f.write_str("Unable to find magic bytes at start of payload"),
+            ChecksumMismatch => f.write_str("Data read was corrupt"),
             ReadError(error) => write!(f, "Read error: {:?}", error),
         }
     }
