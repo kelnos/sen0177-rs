@@ -11,6 +11,9 @@ categories = [ "embedded", "hardware-support", "no-std" ]
 keywords = [ "air-quality", "embedded-hal", "sensor", "sen0177", "pmsa003i" ]
 edition = "2018"
 
+[package.metadata.docs.rs]
+all-features = true
+
 [features]
 default = []
 # Provides impl for std types like std::error::Error
