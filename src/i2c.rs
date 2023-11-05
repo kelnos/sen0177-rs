@@ -1,5 +1,5 @@
 use crate::{read::*, AirQualitySensor, Reading, SensorError};
-use embedded_hal::i2c::{blocking::I2c, AddressMode, Error as I2cError};
+use embedded_hal::i2c::{AddressMode, Error as I2cError, I2c};
 
 /// A SEN0177 device connected via I2C
 pub struct Sen0177<A, I2C, E>

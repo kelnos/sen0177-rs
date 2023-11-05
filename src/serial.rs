@@ -1,7 +1,7 @@
 use crate::{read::*, AirQualitySensor, Reading, SensorError};
-use embedded_hal::{
+use embedded_hal_nb::{
     nb::block,
-    serial::{nb::Read, Error as SerialError},
+    serial::{Error as SerialError, Read},
 };
 
 /// A SEN0177 device connected via serial UART

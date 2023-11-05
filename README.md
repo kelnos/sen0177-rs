@@ -22,67 +22,23 @@ Include the following in your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-sen0177 = "0.4"
+sen0177 = "0.5"
 ```
 
 If you are in a `no_std` environment, you may depend on this crate like so:
 
 ```toml
 [dependencies]
-sen0177 = { version = "0.4", default-features = false }
+sen0177 = { version = "0.5", default-features = false }
 ```
 
 ## Usage
 
-This example shows how to use the sensor when connected to a Linux-
-based serial device.
+See the `examples/` directory.
 
-Note that this example currently does not work becuase this crate is
-tracking the current embedded-hal 1.0.0 alpha, but linux-embedded-hal
-is a little behind at the time of writing.  If you want to use my patched
-version, add the following to your `Cargo.toml`:
-
-```toml
-[patch.crates-io]
-linux-embedded-hal = { git = "https://github.com/kelnos/linux-embedded-hal.git", branch = "embedded-hal-1.0.0-alpha.8" }
-```
-
-```rust,no_run,ignore
-use linux_embedded_hal::Serial;
-use sen0177::{serial::Sen0177, Reading};
-use serial::{core::prelude::*, BaudRate, CharSize, FlowControl, Parity, StopBits};
-use std::{io, path::Path, time::Duration};
-
-const SERIAL_PORT: &str = "/dev/ttyS0";
-const BAUD_RATE: BaudRate = BaudRate::Baud9600;
-const CHAR_SIZE: CharSize = CharSize::Bits8;
-const PARITY: Parity = Parity::ParityNone;
-const STOP_BITS: StopBits = StopBits::Stop1;
-const FLOW_CONTROL: FlowControl = FlowControl::FlowNone;
-
-pub fn main() -> anyhow::Result<()> {
-    let mut serial = Serial::open(&Path::new(SERIAL_PORT))?;
-    serial.0.set_timeout(Duration::from_millis(1500))?;
-    serial.0.reconfigure(&|settings| {
-        settings.set_char_size(CHAR_SIZE);
-        settings.set_parity(PARITY);
-        settings.set_stop_bits(STOP_BITS);
-        settings.set_flow_control(FLOW_CONTROL);
-        settings.set_baud_rate(BAUD_RATE)
-    })?;
-    let mut sensor = Sen0177::new(serial);
-
-    loop {
-        match sensor.read() {
-            Ok(reading) => {
-                println!("PM1: {}µg/m³, PM2.5: {}µg/m³, PM10: {}µg/m³",
-                         reading.pm1(), reading.pm2_5(), reading.pm10());
-            },
-            Err(err) => eprintln!("Error: {:?}", err),
-        }
-    }
-}
-```
+Note that `linux-embedded-hal` does not currently have a release
+supporting the 1.0.0 release candidates of `embedded-hal`, so the
+Linux example has to pull `linux-embedded-hal` from GitHub.
 
 Note that the serial device occasionally returns bad data.  If you
 receive [`SensorError::BadMagic`] or [`SensorError::ChecksumMismatch`]
