@@ -1,7 +1,7 @@
 [package]
 name = "sen0177"
 description = "Read air quality data from the SEN0177 and PMSA003I sensors"
-version = "0.5.0"
+version = "0.5.1-alpha.1"
 authors = ["Brian J. Tarricone <brian@tarricone.org>"]
 homepage = "https://github.com/kelnos/sen0177-rs"
 repository = "https://github.com/kelnos/sen0177-rs"
