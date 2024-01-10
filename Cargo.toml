@@ -1,7 +1,7 @@
 [package]
 name = "sen0177"
 description = "Read air quality data from the SEN0177 and PMSA003I sensors"
-version = "0.5.1-alpha.1"
+version = "0.6.0-alpha.1"
 authors = ["Brian J. Tarricone <brian@tarricone.org>"]
 homepage = "https://github.com/kelnos/sen0177-rs"
 repository = "https://github.com/kelnos/sen0177-rs"
@@ -20,10 +20,10 @@ default = []
 std = []
 
 [dependencies]
-embedded-hal = "=1.0.0-rc.1"
-embedded-hal-nb = "=1.0.0-rc.1"
+embedded-hal = "1"
+embedded-hal-nb = "1"
 
 [dev-dependencies]
 anyhow = "1"
-linux-embedded-hal = { git = "https://github.com/rust-embedded/linux-embedded-hal", rev = "27daf71e8ee22ff2b33fca5972a47dd139de69e2" }
+linux-embedded-hal = { git = "https://github.com/kelnos/linux-embedded-hal", branch = "embedded-hal-1" }
 serial = "0.4"

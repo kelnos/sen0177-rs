@@ -22,23 +22,23 @@ Include the following in your `Cargo.toml` file:
 
 ```toml
 [dependencies]
-sen0177 = "0.5"
+sen0177 = "0.6"
 ```
 
 If you are in a `no_std` environment, you may depend on this crate like so:
 
 ```toml
 [dependencies]
-sen0177 = { version = "0.5", default-features = false }
+sen0177 = { version = "0.6", default-features = false }
 ```
 
 ## Usage
 
 See the `examples/` directory.
 
-Note that `linux-embedded-hal` does not currently have a release
-supporting the 1.0.0 release candidates of `embedded-hal`, so the
-Linux example has to pull `linux-embedded-hal` from GitHub.
+Note that `linux-embedded-hal` does not (as of this writing) have a
+release supporting the stable 1.x series of `embedded-hal`, so the Linux
+example has to pull `linux-embedded-hal` from GitHub.
 
 Note that the serial device occasionally returns bad data.  If you
 receive [`SensorError::BadMagic`] or [`SensorError::ChecksumMismatch`]
