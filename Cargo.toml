@@ -9,7 +9,7 @@ license = "Apache-2.0"
 readme = "README.md"
 categories = [ "embedded", "hardware-support", "no-std" ]
 keywords = [ "air-quality", "embedded-hal", "sensor", "sen0177", "pmsa003i" ]
-edition = "2018"
+edition = "2021"
 
 [package.metadata.docs.rs]
 all-features = true
